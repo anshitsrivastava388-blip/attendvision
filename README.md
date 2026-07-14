@@ -22,9 +22,9 @@ attendance using real-time face recognition from a classroom webcam.
 
 ## Screenshots
 
-| Dashboard | Smart Attendance |
-| --- | --- |
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Smart Attendance](docs/screenshots/smart-attendance.png) |
+| Login | Dashboard | Smart Attendance |
+| --- | --- | --- |
+| ![Login](docs/screenshots/login.png) | ![Dashboard](docs/screenshots/dashboard.png) | ![Smart Attendance](docs/screenshots/smart-attendance.png) |
 
 | Students | Attendance Records | Reports |
 | --- | --- | --- |
