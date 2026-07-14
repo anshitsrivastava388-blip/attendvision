@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+{% block navbar_title %}Student Management{% endblock %}
+{% block content %}
+<div class="page-head d-flex justify-content-between align-items-center">
+  <div>
+    <h2>Students</h2>
+    <p class="text-muted">Manage student records and face registration.</p>
+  </div>
+  <a href="{{ url_for('students.add_student') }}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Student</a>
+</div>
+
+<div class="panel">
+  <form class="filter-bar" method="GET">
+    <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Search name or roll number">
+    <select name="department" class="form-select">
+      <option value="">All Departments</option>
+      {% for d in departments %}
+      <option value="{{ d }}" {{ 'selected' if department == d }}>{{ d }}</option>
+      {% endfor %}
+    </select>
+    <input type="text" name="year" value="{{ year }}" class="form-control" placeholder="Year">
+    <input type="text" name="section" value="{{ section }}" class="form-control" placeholder="Section">
+    <button class="btn btn-outline-primary"><i class="fa-solid fa-filter"></i> Filter</button>
+  </form>
+
+  <div class="table-responsive">
+    <table class="table styled-table">
+      <thead>
+        <tr>
+          <th>Photo</th><th>Roll No.</th><th>Name</th><th>Department</th><th>Year</th><th>Section</th><th>Face Trained</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td>
+            {% if s.photo_path %}
+            <img src="{{ url_for('static', filename='uploads/students/' + s.photo_path) }}" class="avatar-sm">
+            {% else %}
+            <div class="avatar-sm avatar-placeholder"><i class="fa-solid fa-user"></i></div>
+            {% endif %}
+          </td>
+          <td>{{ s.roll_number }}</td>
+          <td>{{ s.name }}</td>
+          <td>{{ s.department }}</td>
+          <td>{{ s.year }}</td>
+          <td>{{ s.section }}</td>
+          <td>
+            {% if s.is_face_trained %}
+            <span class="badge badge-success">Trained</span>
+            {% else %}
+            <span class="badge badge-muted">Not Trained</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a href="{{ url_for('face.register_face', student_id=s.id) }}" class="btn btn-sm btn-outline-secondary" title="Register Face"><i class="fa-solid fa-camera"></i></a>
+            <a href="{{ url_for('students.edit_student', student_id=s.id) }}" class="btn btn-sm btn-outline-primary" title="Edit"><i class="fa-solid fa-pen"></i></a>
+            <form method="POST" action="{{ url_for('students.delete_student', student_id=s.id) }}" class="d-inline" onsubmit="return confirm('Delete {{ s.name }}?');">
+              <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No students found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

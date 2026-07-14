@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Reports & Analytics{% endblock %}
+{% block navbar_title %}Reports & Analytics{% endblock %}
+{% block content %}
+<div class="stat-grid">
+  <div class="stat-card">
+    <i class="fa-solid fa-user-graduate stat-icon icon-blue"></i>
+    <div><span class="stat-value">{{ total_students }}</span><span class="stat-label">Total Students</span></div>
+  </div>
+  <div class="stat-card">
+    <i class="fa-solid fa-circle-check stat-icon icon-green"></i>
+    <div><span class="stat-value">{{ total_present }}</span><span class="stat-label">Total Present Marks</span></div>
+  </div>
+  <div class="stat-card">
+    <i class="fa-solid fa-calendar-days stat-icon icon-amber"></i>
+    <div><span class="stat-value">{{ total_days_logged }}</span><span class="stat-label">Days Logged</span></div>
+  </div>
+  <div class="stat-card">
+    <i class="fa-solid fa-percent stat-icon icon-purple"></i>
+    <div><span class="stat-value">{{ overall_pct }}%</span><span class="stat-label">Overall Attendance %</span></div>
+  </div>
+</div>
+
+<div class="row g-4 mt-2">
+  <div class="col-lg-7">
+    <div class="panel">
+      <h3>Monthly Attendance (This Month)</h3>
+      <canvas id="monthlyChart" height="220"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="panel">
+      <h3>Department-wise Attendance Today</h3>
+      <canvas id="deptTodayChart" height="220"></canvas>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+fetch("{{ url_for('reports.api_monthly') }}").then(r => r.json()).then(({labels, data}) => {
+  new Chart(document.getElementById('monthlyChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Present count', data, borderColor: '#4f6df5', tension: 0.3, fill: true, backgroundColor: 'rgba(79,109,245,0.1)' }] },
+    options: { responsive: true }
+  });
+});
+fetch("{{ url_for('reports.api_department') }}").then(r => r.json()).then(({labels, data}) => {
+  new Chart(document.getElementById('deptTodayChart'), {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: ['#4f6df5', '#22c55e', '#f59e0b', '#a855f7', '#ef4444', '#06b6d4'] }] },
+    options: { responsive: true }
+  });
+});
+</script>
+{% endblock %}

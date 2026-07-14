@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Attendance Records{% endblock %}
+{% block navbar_title %}Attendance Records{% endblock %}
+{% block content %}
+<div class="page-head d-flex justify-content-between align-items-center">
+  <div>
+    <h2>Attendance Records</h2>
+    <p class="text-muted">Date-wise, subject-wise and student-wise history.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('attendance.export', fmt='csv', **filters) }}" class="btn btn-outline-secondary"><i class="fa-solid fa-file-csv"></i> CSV</a>
+    <a href="{{ url_for('attendance.export', fmt='excel', **filters) }}" class="btn btn-outline-secondary"><i class="fa-solid fa-file-excel"></i> Excel</a>
+  </div>
+</div>
+
+<div class="panel">
+  <form class="filter-bar" method="GET">
+    <input type="date" name="date" value="{{ filters.get('date', '') }}" class="form-control">
+    <input type="text" name="student" value="{{ filters.get('student', '') }}" class="form-control" placeholder="Student name or roll no.">
+    <select name="subject_id" class="form-select">
+      <option value="">All Subjects</option>
+      {% for s in subjects %}
+      <option value="{{ s.id }}" {{ 'selected' if filters.get('subject_id') == s.id|string }}>{{ s.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="department" class="form-select">
+      <option value="">All Departments</option>
+      {% for d in departments %}
+      <option value="{{ d }}" {{ 'selected' if filters.get('department') == d }}>{{ d }}</option>
+      {% endfor %}
+    </select>
+    <select name="status" class="form-select">
+      <option value="">Any Status</option>
+      <option value="Present" {{ 'selected' if filters.get('status') == 'Present' }}>Present</option>
+      <option value="Absent" {{ 'selected' if filters.get('status') == 'Absent' }}>Absent</option>
+    </select>
+    <button class="btn btn-outline-primary"><i class="fa-solid fa-filter"></i> Filter</button>
+  </form>
+
+  <div class="d-flex justify-content-end mb-2">
+    <form method="POST" action="{{ url_for('reports.email_report') }}" class="email-form">
+      <input type="text" name="recipients" class="form-control" placeholder="faculty@college.edu, hod@college.edu" required>
+      <button class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-envelope"></i> Email Report</button>
+    </form>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table styled-table">
+      <thead>
+        <tr><th>Date</th><th>Time</th><th>Roll No.</th><th>Name</th><th>Department</th><th>Subject</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for r in records %}
+        <tr>
+          <td>{{ r.date }}</td>
+          <td>{{ r.time.strftime('%H:%M:%S') }}</td>
+          <td>{{ r.student.roll_number }}</td>
+          <td>{{ r.student.name }}</td>
+          <td>{{ r.student.department }}</td>
+          <td>{{ r.subject.name if r.subject else '-' }}</td>
+          <td>
+            {% if r.status == 'Present' %}
+            <span class="badge badge-success">Present</span>
+            {% else %}
+            <span class="badge badge-danger">Absent</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No records match these filters.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block guest_content %}
+<div class="login-wrapper">
+  <div class="login-split">
+    <div class="login-visual">
+      <div class="login-visual-copy">
+        <div class="scan-frame">
+          <i class="fa-solid fa-user"></i>
+          <div class="scan-line"></div>
+        </div>
+        <h2>Face Recognition Attendance</h2>
+        <p>Point the camera, and AttendVision handles the rest &mdash; no roll calls, no paperwork.</p>
+      </div>
+      <ul class="login-feature-list">
+        <li><i class="fa-solid fa-bolt"></i> Real-time recognition &amp; marking</li>
+        <li><i class="fa-solid fa-chart-line"></i> Live analytics &amp; reports</li>
+        <li><i class="fa-solid fa-file-export"></i> One-click CSV / Excel export</li>
+      </ul>
+    </div>
+    <div class="login-card">
+      <div class="login-brand">
+        <i class="fa-solid fa-user-check"></i>
+        <h1>Attend<strong>Vision</strong></h1>
+        <p>Smart Attendance Monitoring System</p>
+      </div>
+      <form method="POST" action="{{ url_for('auth.login') }}">
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" placeholder="admin" required autofocus>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Sign In</button>
+      </form>
+      <p class="login-hint">Default: <code>admin</code> / <code>admin123</code> &mdash; change after first login.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

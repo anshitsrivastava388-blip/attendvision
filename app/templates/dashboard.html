@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block navbar_title %}Dashboard{% endblock %}
+{% block content %}
+<div class="dash-hero">
+  <div class="dash-hero-text">
+    <h2><i class="fa-solid fa-hand-sparkles"></i> Welcome back, {{ current_user.username }}</h2>
+    <p>{{ today.strftime('%A, %d %B %Y') }} &mdash; here's how attendance looks today.</p>
+  </div>
+  <div class="dash-hero-actions">
+    <a href="{{ url_for('face.start_attendance') }}" class="btn btn-light"><i class="fa-solid fa-camera"></i> Start Attendance</a>
+    <a href="{{ url_for('students.add_student') }}" class="btn btn-outline-light"><i class="fa-solid fa-user-plus"></i> Add Student</a>
+  </div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <i class="fa-solid fa-user-graduate stat-icon icon-blue"></i>
+    <div><span class="stat-value">{{ total_students }}</span><span class="stat-label">Total Students</span></div>
+  </div>
+  <div class="stat-card">
+    <i class="fa-solid fa-circle-check stat-icon icon-green"></i>
+    <div><span class="stat-value">{{ present_today }}</span><span class="stat-label">Present Today</span></div>
+  </div>
+  <div class="stat-card">
+    <i class="fa-solid fa-circle-xmark stat-icon icon-red"></i>
+    <div><span class="stat-value">{{ absent_today }}</span><span class="stat-label">Absent Today</span></div>
+  </div>
+  <div class="stat-card">
+    <i class="fa-solid fa-percent stat-icon icon-amber"></i>
+    <div><span class="stat-value">{{ attendance_pct_today }}%</span><span class="stat-label">Attendance Rate</span></div>
+  </div>
+</div>
+
+<div class="row g-4 mt-2">
+  <div class="col-lg-7">
+    <div class="panel">
+      <h3>Department-wise Students</h3>
+      <canvas id="deptChart" height="220"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="panel">
+      <h3>Recent Attendance Activity</h3>
+      <ul class="activity-list">
+        {% for r in recent %}
+        <li>
+          <i class="fa-solid fa-circle-check text-success"></i>
+          <div>
+            <strong>{{ r.student.name }}</strong> ({{ r.student.roll_number }})
+            <div class="text-muted small">{{ r.date }} at {{ r.time.strftime('%H:%M') }}</div>
+          </div>
+        </li>
+        {% else %}
+        <li class="text-muted">No attendance marked yet. Start the Smart Attendance session.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+new Chart(document.getElementById('deptChart'), {
+  type: 'bar',
+  data: {
+    labels: {{ department_labels|tojson }},
+    datasets: [{ label: 'Students', data: {{ department_counts|tojson }}, backgroundColor: '#4f6df5' }]
+  },
+  options: { responsive: true, plugins: { legend: { display: false } } }
+});
+</script>
+{% endblock %}

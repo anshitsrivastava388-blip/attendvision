@@ -1,0 +1,27 @@
+<aside class="app-sidebar">
+  <div class="sidebar-brand">
+    <i class="fa-solid fa-user-check"></i>
+    <span>Attend<strong>Vision</strong></span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="{{ url_for('dashboard.index') }}" class="{{ 'active' if request.endpoint == 'dashboard.index' }}">
+      <i class="fa-solid fa-gauge-high"></i> Dashboard
+    </a>
+    <a href="{{ url_for('students.list_students') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('students.') }}">
+      <i class="fa-solid fa-user-graduate"></i> Students
+    </a>
+    <a href="{{ url_for('face.start_attendance') }}" class="{{ 'active' if request.endpoint == 'face.start_attendance' }}">
+      <i class="fa-solid fa-camera"></i> Smart Attendance
+    </a>
+    <a href="{{ url_for('attendance.records') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('attendance.') }}">
+      <i class="fa-solid fa-clipboard-list"></i> Attendance Records
+    </a>
+    <a href="{{ url_for('reports.reports_page') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('reports.') }}">
+      <i class="fa-solid fa-chart-column"></i> Reports & Analytics
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <i class="fa-solid fa-graduation-cap"></i>
+    <span>AttendVision &mdash; College Attendance</span>
+  </div>
+</aside>

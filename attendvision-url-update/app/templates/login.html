@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block guest_content %}
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="login-brand">
+      <i class="fa-solid fa-user-check"></i>
+      <h1>Attend<strong>Vision</strong></h1>
+      <p>Smart Attendance Monitoring System</p>
+    </div>
+    <form method="POST" action="{{ url_for('auth.login') }}">
+      <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-control" placeholder="admin" required autofocus>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Sign In</button>
+    </form>
+    <p class="login-hint">Default: <code>admin</code> / <code>admin123</code> &mdash; change after first login.</p>
+  </div>
+</div>
+{% endblock %}

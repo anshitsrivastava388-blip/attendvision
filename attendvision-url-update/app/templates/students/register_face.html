@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Register Face{% endblock %}
+{% block navbar_title %}Face Registration{% endblock %}
+{% block content %}
+<div class="panel form-panel text-center">
+  <i class="fa-solid fa-camera-retro face-hero-icon"></i>
+  <h3>Register Face for {{ student.name }} ({{ student.roll_number }})</h3>
+  <p class="text-muted">
+    This uses the webcam connected to this PC. Ask the student to face the camera directly
+    with good, even lighting. The system will automatically capture multiple angles and train
+    the AI model from them.
+  </p>
+
+  {% if student.is_face_trained %}
+  <p class="text-success"><i class="fa-solid fa-circle-check"></i> This student already has a trained face profile. Re-capturing will replace it.</p>
+  {% endif %}
+
+  <div id="face-feed-wrap" class="face-feed-wrap" style="display:none;">
+    <img id="face-feed" class="face-feed-img" alt="Camera preview">
+  </div>
+
+  <div id="face-progress" class="mt-3" style="display:none;">
+    <div class="progress" style="height: 22px;">
+      <div id="face-progress-bar" class="progress-bar bg-success" role="progressbar" style="width:0%">0%</div>
+    </div>
+    <p class="text-muted mt-2" id="face-progress-text">Capturing 0 / 0 samples&hellip;</p>
+  </div>
+
+  <div id="face-result" class="mt-3"></div>
+
+  <div class="mt-3">
+    <button id="face-start-btn" type="button" class="btn btn-primary btn-lg">
+      <i class="fa-solid fa-camera"></i> Start Camera & Capture
+    </button>
+    <button id="face-stop-btn" type="button" class="btn btn-outline-danger btn-lg" style="display:none;">
+      <i class="fa-solid fa-stop"></i> Stop
+    </button>
+  </div>
+
+  <p class="mt-3"><a href="{{ url_for('students.list_students') }}">&larr; Back to students</a></p>
+</div>
+
+<script>
+(function () {
+  const studentId = {{ student.id }};
+  const urls = {
+    start: "{{ url_for('face.register_face_start', student_id=student.id) }}",
+    stop: "{{ url_for('face.register_face_stop', student_id=student.id) }}",
+    status: "{{ url_for('face.register_face_status', student_id=student.id) }}",
+    feed: "{{ url_for('face.register_face_feed', student_id=student.id) }}",
+  };
+  const startBtn = document.getElementById("face-start-btn");
+  const stopBtn = document.getElementById("face-stop-btn");
+  const feedWrap = document.getElementById("face-feed-wrap");
+  const feedImg = document.getElementById("face-feed");
+  const progressWrap = document.getElementById("face-progress");
+  const progressBar = document.getElementById("face-progress-bar");
+  const progressText = document.getElementById("face-progress-text");
+  const resultBox = document.getElementById("face-result");
+  let pollTimer = null;
+
+  function setResult(html, cls) {
+    resultBox.innerHTML = `<div class="alert alert-${cls}">${html}</div>`;
+  }
+
+  function poll() {
+    fetch(urls.status).then(r => r.json()).then(data => {
+      progressWrap.style.display = "block";
+      const pct = data.capture_count ? Math.round((data.saved / data.capture_count) * 100) : 0;
+      progressBar.style.width = pct + "%";
+      progressBar.textContent = pct + "%";
+      progressText.textContent = `Capturing ${data.saved} / ${data.capture_count} samples…`;
+
+      if (!data.running) {
+        clearInterval(pollTimer);
+        feedWrap.style.display = "none";
+        feedImg.src = "";
+        stopBtn.style.display = "none";
+        startBtn.style.display = "inline-block";
+        startBtn.textContent = "Start Camera & Capture";
+        if (data.error) {
+          setResult(data.error, "danger");
+        } else if (data.saved > 0) {
+          setResult(`Captured and trained ${data.saved} face sample(s) for this student.`, "success");
+        } else {
+          setResult("No face samples captured. Try again with better lighting.", "warning");
+        }
+      }
+    });
+  }
+
+  startBtn.addEventListener("click", function () {
+    resultBox.innerHTML = "";
+    fetch(urls.start, { method: "POST" })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok) {
+          setResult(data.error || "Could not start capture.", "danger");
+          return;
+        }
+        feedWrap.style.display = "block";
+        feedImg.src = `${urls.feed}?t=${Date.now()}`;
+        startBtn.style.display = "none";
+        stopBtn.style.display = "inline-block";
+        pollTimer = setInterval(poll, 700);
+      });
+  });
+
+  stopBtn.addEventListener("click", function () {
+    fetch(urls.stop, { method: "POST" });
+  });
+})();
+</script>
+{% endblock %}

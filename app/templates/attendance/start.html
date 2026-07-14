@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Smart Attendance{% endblock %}
+{% block navbar_title %}Smart Attendance{% endblock %}
+{% block content %}
+<div class="panel form-panel text-center">
+  <i class="fa-solid fa-camera face-hero-icon"></i>
+  <h3>Real-Time Attendance Session</h3>
+  <p class="text-muted">
+    Uses the webcam connected to this PC and continuously scans for registered faces. Each
+    recognized student is marked <strong>Present</strong> automatically &mdash; only once per day
+    &mdash; and their name and roll number appear on screen.
+  </p>
+
+  <div class="subject-select-form mx-auto" style="max-width: 360px;">
+    <label class="form-label">Subject (optional, for subject-wise attendance)</label>
+    <select id="subject-select" class="form-select mb-3">
+      <option value="">General / No specific subject</option>
+      {% for subj in subjects %}
+      <option value="{{ subj.id }}">{{ subj.name }} ({{ subj.code }})</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div id="att-feed-wrap" class="face-feed-wrap" style="display:none;">
+    <img id="att-feed" class="face-feed-img" alt="Camera preview">
+  </div>
+
+  <div id="att-marked" class="mt-3"></div>
+  <div id="att-result" class="mt-3"></div>
+
+  <div class="mt-3">
+    <button id="att-start-btn" type="button" class="btn btn-primary btn-lg">
+      <i class="fa-solid fa-play"></i> Start Attendance Session
+    </button>
+    <button id="att-stop-btn" type="button" class="btn btn-outline-danger btn-lg" style="display:none;">
+      <i class="fa-solid fa-stop"></i> End Session
+    </button>
+  </div>
+
+  <div class="camera-status-badge mt-3">
+    <i class="fa-solid fa-circle text-success"></i> Camera status: {{ camera_status }}
+  </div>
+</div>
+
+<script>
+(function () {
+  const urls = {
+    begin: "{{ url_for('face.attendance_begin') }}",
+    stop: "{{ url_for('face.attendance_stop') }}",
+    status: "{{ url_for('face.attendance_status') }}",
+    feed: "{{ url_for('face.attendance_feed') }}",
+  };
+  const startBtn = document.getElementById("att-start-btn");
+  const stopBtn = document.getElementById("att-stop-btn");
+  const feedWrap = document.getElementById("att-feed-wrap");
+  const feedImg = document.getElementById("att-feed");
+  const subjectSelect = document.getElementById("subject-select");
+  const markedBox = document.getElementById("att-marked");
+  const resultBox = document.getElementById("att-result");
+  let pollTimer = null;
+
+  function renderMarked(marked) {
+    const entries = Object.values(marked || {});
+    if (!entries.length) {
+      markedBox.innerHTML = "";
+      return;
+    }
+    const rows = entries.map(s =>
+      `<li>${s.name} (${s.roll_number}) ${s.newly_marked ? '<span class="badge bg-success">Marked</span>' : '<span class="badge bg-secondary">Already marked today</span>'}</li>`
+    ).join("");
+    markedBox.innerHTML = `<p class="fw-semibold">Recognized this session (${entries.length}):</p><ul class="list-unstyled">${rows}</ul>`;
+  }
+
+  function poll() {
+    fetch(urls.status).then(r => r.json()).then(data => {
+      renderMarked(data.marked);
+      if (!data.running) {
+        clearInterval(pollTimer);
+        feedWrap.style.display = "none";
+        feedImg.src = "";
+        stopBtn.style.display = "none";
+        startBtn.style.display = "inline-block";
+        if (data.error) {
+          resultBox.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+        } else {
+          const marked = Object.values(data.marked || {});
+          const newly = marked.filter(s => s.newly_marked).length;
+          resultBox.innerHTML = `<div class="alert alert-success">Session ended. ${newly} student(s) newly marked present out of ${marked.length} recognized.</div>`;
+        }
+      }
+    });
+  }
+
+  startBtn.addEventListener("click", function () {
+    resultBox.innerHTML = "";
+    markedBox.innerHTML = "";
+    const body = new URLSearchParams({ subject_id: subjectSelect.value });
+    fetch(urls.begin, { method: "POST", body })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok) {
+          resultBox.innerHTML = `<div class="alert alert-danger">${data.error || "Could not start session."}</div>`;
+          return;
+        }
+        feedWrap.style.display = "block";
+        feedImg.src = `${urls.feed}?t=${Date.now()}`;
+        startBtn.style.display = "none";
+        stopBtn.style.display = "inline-block";
+        pollTimer = setInterval(poll, 700);
+      });
+  });
+
+  stopBtn.addEventListener("click", function () {
+    fetch(urls.stop, { method: "POST" });
+  });
+})();
+</script>
+{% endblock %}

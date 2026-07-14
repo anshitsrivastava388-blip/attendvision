@@ -1,0 +1,19 @@
+<header class="app-navbar">
+  <button class="sidebar-toggle d-lg-none" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+  <div class="navbar-title">{% block navbar_title %}{% endblock %}</div>
+  <div class="navbar-right">
+    <span class="camera-status" title="Camera runs locally when Smart Attendance is started">
+      <i class="fa-solid fa-circle text-success"></i> Camera ready
+    </span>
+    <div class="dropdown">
+      <button class="btn btn-sm admin-pill dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="fa-solid fa-user-shield"></i> {{ current_user.username }}
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><span class="dropdown-item-text text-muted small">{{ current_user.role|capitalize }}</span></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</header>
